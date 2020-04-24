@@ -1,1 +1,1 @@
-# EjercicioClase7
+Resolucion ejercicio clase 7
