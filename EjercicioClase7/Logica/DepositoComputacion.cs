@@ -8,12 +8,15 @@ namespace Logica
 {
     public sealed class DepositoComputacion
     {
-        public List<ElementoComputacion> ListaElementosDeComputacion { get; set; }
+        public List<Monitor> ListaMonitores { get; set; }
+        public List<Computadora> ListaComputadoras { get; set; }
         private static DepositoComputacion instance = null;
+        public EventHandler<InfoProductoArgs> ProductoAgregado_Eliminado;
 
         private DepositoComputacion()
         {
-
+            ListaMonitores = new List<Monitor>();
+            ListaComputadoras = new List<Computadora>();
         }
    
         public static DepositoComputacion Instance 
@@ -32,27 +35,76 @@ namespace Logica
         {
             Monitor nuevoMonitor = new Monitor();
             nuevoMonitor.CargarDatos(modelo, marca, numero, anofabricacion, pulgadas);
-            ListaElementosDeComputacion.Add(nuevoMonitor);
+            ListaMonitores.Add(nuevoMonitor);
+            this.ProductoAgregado_Eliminado(this, new InfoProductoArgs()
+            {
+                Tipo = "Monitor",
+                Identificador = nuevoMonitor.Identificador,
+                Operacion="Agregar"
+            
+            });
+            
         }
-       
+
         public void AgregarProducto(string modelo, string marca, int numero, string descripcion, MemoriaRAM memoria, string fabricante)
         {
             Computadora nuevaComputadora = new Computadora();
             nuevaComputadora.CargarDatos(modelo, marca, numero, descripcion, memoria, fabricante);
-            ListaElementosDeComputacion.Add(nuevaComputadora);
+            ListaComputadoras.Add(nuevaComputadora);
+            this.ProductoAgregado_Eliminado(this, new InfoProductoArgs()
+            {
+                Tipo = "Computadora",
+                Identificador = nuevaComputadora.Identificador,
+                Operacion = "Agregar"
+            });
         }
 
         public bool EliminarProductoLista(string identificador)
         {
-            ElementoComputacion elementoEncontrado = ListaElementosDeComputacion.Find(x => x.Identificador == identificador);
+            List<ElementoComputacion> listaElementos = ObtenerListaElementosComputacion();
+            ElementoComputacion elementoEncontrado = listaElementos.Find(x => x.Identificador == identificador);
+            string tipoproducto;
             if (elementoEncontrado!=null)
             {
-                ListaElementosDeComputacion.Remove(elementoEncontrado);
+                if (elementoEncontrado is Monitor)
+                {
+                    ListaMonitores.Remove(elementoEncontrado as Monitor);
+                    tipoproducto = "Monitor";
+                }
+                else
+                {
+                    ListaComputadoras.Remove(elementoEncontrado as Computadora);
+                    tipoproducto = "Computadora";
+                }
+                this.ProductoAgregado_Eliminado(this, new InfoProductoArgs()
+                {
+                    Tipo = tipoproducto,
+                    Identificador = elementoEncontrado.Identificador,
+                    Operacion = "Eliminar"
+
+                });
+
                 return true;
             }
             return false;
         }
 
-        
+        public List<ElementoComputacion>ObtenerListaElementosComputacion()
+        {
+            List<ElementoComputacion> listaElementosComputacion = new List<ElementoComputacion>();
+            listaElementosComputacion.AddRange(ListaMonitores);
+            listaElementosComputacion.AddRange(ListaComputadoras);
+            return listaElementosComputacion;
+        }
+
+        public string ObtenerDescripcionElementos(ElementoComputacion elemento)
+        {
+            if (elemento is Monitor)
+            {
+               return (elemento as Monitor).ObtenerDescripcion();
+            }
+            return (elemento as Computadora).ObtenerDescripcion();
+        }
+  
     }
 }

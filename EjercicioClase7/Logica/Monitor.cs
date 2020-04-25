@@ -20,6 +20,11 @@ namespace Logica
             this.AnoFabricacion = anofabricacion;
             this.Pulgadas = pulgadas;
         }
+
+        public override string ObtenerDescripcion()
+        {
+            return (Pulgadas != null) ? $"MONITOR {this.Marca}-{this.Modelo} {this.Pulgadas}" : $"MONITOR  {this.Marca}-{this.Modelo}";
+        }
     }
 }
  
